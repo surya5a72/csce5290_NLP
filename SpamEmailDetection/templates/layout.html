@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - My Flask Application</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/static/content/site.css" />
+</head>
+<body>
+	<div class="" id="loader"></div>
+	<div class="container">
+		<form id="formId" name="formId">
+			<div class="form-row">
+				<div class="form-group col-md-12">
+					<center><h1>SPAM Email Detection</h1></center>
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group col-md-12">
+					<h3>Email Form</h3>
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group col-md-4">
+					<label for="inputEmail4">From-Email</label><i class="invalid">*</i>
+					<input type="email" class="form-control" id="FEmail" placeholder="Email">
+					<span class="display-none invalid">Please enter a valid email.</span>
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group col-md-4">
+					<label for="inputEmail4">To-Email</label><i class="invalid">*</i>
+					<input type="email" class="form-control" id="TEmail" placeholder="Email">
+					<span class="display-none invalid">Please enter a valid email.</span>
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group col-md-4">
+					<label for="subject">Subject</label><i class="invalid">*</i>
+					<input type="text" class="form-control" id="Subject" placeholder="Subject">
+					<span class="display-none invalid">Please enter the subject field</span>
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group col-md-4">
+					<label for="body">Body</label><i class="invalid">*</i>
+					<textarea rows="4" cols="50" class="form-control" id="Body" required> </textarea>
+					<span class="display-none invalid">Please enter the body field</span>
+				</div>
+			</div>
+
+			<div class="form-row">
+				<div class="form-group col-md-2">
+					<button id="trigger" type="submit" disabled class="btn btn-primary submit">Submit</button>
+				</div>
+			</div>
+			<div class="form-row">
+				<div class="form-group col-md-2">
+				</div>
+				<div class="form-group col-md-6">
+					<div><p id="validation" class="display-none"> Please correct/fill out all the fields mentioned *.</p></div>
+				</div>
+			</div>
+		</form>
+	</div>
+	<script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+	<script>
+		$(document).ready(function () {
+			var form = document.getElementById("formId");
+			var guid = generateGUID();
+			var emailCount = 0;
+			let passwdpattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*]{10,}$/;
+			let emailpattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+			function submitForm(event) {
+				//Preventing page refresh
+				$('#loader').addClass('overlay');
+				// setTimeout(() => {
+				// 	$('#loader').removeClass('overlay');
+				// }, 6000);
+
+				SFMCEmailAPI();
+				event.preventDefault();
+			}
+
+			function generateGUID() {
+				return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+					(c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+				);
+			}
+			console.log(guid);
+
+			//Calling a function during form submission.
+			form.addEventListener('submit', submitForm);
+
+			$('#Body').on('keyup', function () {
+				let Body = document.forms["formId"]["Body"].value;
+				let Subject = document.forms["formId"]["Subject"].value;
+				let temail = document.forms["formId"]["TEmail"].value;
+				let femail = document.forms["formId"]["FEmail"].value;
+				if (!this.value) {
+					$(this.nextElementSibling).removeClass('display-none');
+				}
+				else {
+					$(this.nextElementSibling).addClass('display-none');
+				}
+				if (Body && Subject && temail && femail && emailpattern.test(temail) && emailpattern.test(femail)) {
+					$('.submit').prop('disabled', false);
+				}
+			})
+
+			$('input').on('keyup', function () {
+				let Body = document.forms["formId"]["Body"].value;
+				let Subject = document.forms["formId"]["Subject"].value;
+				let temail = document.forms["formId"]["TEmail"].value;
+				let femail = document.forms["formId"]["FEmail"].value;
+				if (Body && Subject && temail && femail && emailpattern.test(temail) && emailpattern.test(femail)) {
+					$('.submit').prop('disabled', false);
+				}
+				else {
+					$('.submit').prop('disabled', true);
+				}
+			});
+
+			$('#Subject').on('keyup', function () {
+				let Body = document.forms["formId"]["Body"].value;
+				let Subject = document.forms["formId"]["Subject"].value;
+				let temail = document.forms["formId"]["TEmail"].value;
+				let femail = document.forms["formId"]["FEmail"].value;
+				if (!this.value) {
+					$(this.nextElementSibling).removeClass('display-none');
+				}
+				else {
+					$(this.nextElementSibling).addClass('display-none');
+				}
+				if (Body && Subject && temail && femail && emailpattern.test(temail) && emailpattern.test(femail)) {
+					$('.submit').prop('disabled', false);
+				}
+			})
+
+
+			$('#FEmail').on('keyup paste', function () {
+				let Body = document.forms["formId"]["Body"].value;
+				let Subject = document.forms["formId"]["Subject"].value;
+				let temail = document.forms["formId"]["TEmail"].value;
+				let femail = document.forms["formId"]["FEmail"].value;
+				if (!emailpattern.test(this.value)) {
+					$(this.nextElementSibling).removeClass('display-none');
+					$('.submit').prop('disabled', true);
+				}
+				else {
+					$(this.nextElementSibling).addClass('display-none');
+				}
+				if (Body && Subject && temail && femail && emailpattern.test(temail) && emailpattern.test(femail)) {
+					$('.submit').prop('disabled', false);
+				}
+			})
+
+			$('#TEmail').on('keyup paste', function () {
+				let Body = document.forms["formId"]["Body"].value;
+				let Subject = document.forms["formId"]["Subject"].value;
+				let temail = document.forms["formId"]["TEmail"].value;
+				let femail = document.forms["formId"]["FEmail"].value;
+				if (!emailpattern.test(this.value)) {
+					$(this.nextElementSibling).removeClass('display-none');
+					$('.submit').prop('disabled', true);
+				}
+				else {
+					$(this.nextElementSibling).addClass('display-none');
+				}
+				if (Body && Subject && temail && femail && emailpattern.test(temail) && emailpattern.test(femail)) {
+					$('.submit').prop('disabled', false);
+				}
+			})
+
+
+			function SFMCEmailAPI() {
+				let Body = document.forms["formId"]["Body"].value;
+				let Subject = document.forms["formId"]["Subject"].value;
+				let temail = document.forms["formId"]["TEmail"].value;
+				let femail = document.forms["formId"]["FEmail"].value;
+				$.ajax({
+					url: location.href+"api/spamdetection",
+					type: "POST",
+					data: JSON.stringify({
+						"to": temail,
+						"from": femail,
+						"subject": Subject,
+						"body": Body
+					}),
+					headers: {
+						"Content-Type": "application/json"
+					},
+					success: function (data, textStatus, jqXHR) {
+						alert(data.data);
+						$('#loader').removeClass('overlay');
+						location.reload();
+					},
+					error: function (jqXHR, textStatus, errorThrown) {
+						alert('failed');
+						$('#loader').removeClass('overlay');
+						$('.submit').prop('disabled', false);
+					}
+				});
+			}
+
+			$('.submit').click(function () {
+				let Body = document.forms["formId"]["Body"].value;
+				let Subject = document.forms["formId"]["Subject"].value;
+				let temail = document.forms["formId"]["TEmail"].value;
+				let femail = document.forms["formId"]["FEmail"].value;
+
+				if (Body && Subject && temail && femail && emailpattern.test(temail) && emailpattern.test(femail)) {
+					$('.submit').prop('disabled', false);
+					$('#validation').hide();
+				}
+				else {
+					alert('Please correct/fill out all the fields mentioned *.');
+					$('#validation').show();
+				}
+			});
+		});
+	</script>
+</body>
+</html>
