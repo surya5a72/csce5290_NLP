@@ -194,11 +194,12 @@
 					headers: {
 						"Content-Type": "application/json"
 					},
-					success: function (data, textStatus, jqXHR) {
-						alert(data.data);
-						$('#loader').removeClass('overlay');
-						location.reload();
-					},
+					success: function (data, textStatus, jqXHR)
+                    {var message = data.data + "\n" + data.sentiment_analysis_result;
+                        alert(message);
+                        $('#loader').removeClass('overlay');
+                        location.reload();
+},
 					error: function (jqXHR, textStatus, errorThrown) {
 						alert('failed');
 						$('#loader').removeClass('overlay');
