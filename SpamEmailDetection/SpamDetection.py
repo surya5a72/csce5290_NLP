@@ -15,6 +15,7 @@ from datetime import datetime
 import os
 import urllib.request
 from SpamEmailDetection import app
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 
 emailpattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
@@ -84,6 +85,20 @@ def detect_spam():
         input_context = beautify(input_val)
         print(input_context)
         print(input_val)
+
+        # add sentiment analysis
+        analyzer = SentimentIntensityAnalyzer()
+        sentiment = analyzer.polarity_scores(input_val)
+        print("Sentiment Analysis: if the Compund resut is in -, then the sentiment is negative and if there is only 0 then it is positive")
+        print(sentiment)
+
+        # determine the sentiment of the input
+        if sentiment['compound'] < 0:
+            sentiment_result = "Negative"
+        elif sentiment['compound'] > 0:
+            sentiment_result = "Positive"
+        else:
+            sentiment_result = "Neutral"
 
         for key in input_context:
             if apply_regex(key, dotpattern):
@@ -184,7 +199,7 @@ def detect_spam():
         x_test = data_values
         y_pred = classifier.predict(x_test)
         print(y_pred)
-        return jsonify({'data': "Spam Detected" if y_pred[0] == 1 else "Not Spam"})
+        return jsonify({'data': "Spam Detected" if y_pred[0] == 1 else "Not Spam",  'sentiment_analysis_result':  "Sentiment Analysis for the Data is: " + sentiment_result,})
     except Exception as err:
         return jsonify({'data': err})
 
